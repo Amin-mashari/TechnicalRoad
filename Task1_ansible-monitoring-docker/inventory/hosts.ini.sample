@@ -1,0 +1,2 @@
+[observ]
+server ansible_host=1.1.1.1 ansible_user=ansible
