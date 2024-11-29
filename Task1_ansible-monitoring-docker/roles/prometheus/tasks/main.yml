@@ -29,7 +29,12 @@
     name: node-exporter
     image: quay.io/prometheus/node-exporter 
     restart: no  
-    state: started   
+    state: started 
+    memory: "512M"  
+    cpu_shares: 512              # Relative CPU weight (default is 1024; lower means less priority)
+    cpu_period: 100000           # CFS period in microseconds
+    cpu_quota: 50000             # Limit to 50% of 1 CPU core
+    cpuset_cpus: "0"           # Allow execution on CPU cores 0 only    
     networks:
       - name: "{{ docker_network_name}}"      
 
