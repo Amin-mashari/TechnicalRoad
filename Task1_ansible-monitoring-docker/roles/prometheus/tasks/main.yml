@@ -22,6 +22,7 @@
     owner: '1003'
     group: '1003'
     mode: '0644'
+
 # add password for node-exporter
 - name: Create a node exporter container
   docker_container:
@@ -29,6 +30,8 @@
     image: quay.io/prometheus/node-exporter 
     restart: no  
     state: started   
+    networks:
+      - name: "{{ docker_network_name}}"      
 
 - name: Create a prometheus container
   docker_container:
@@ -46,6 +49,8 @@
     state: started   
     ports:
       - 9090:9090 
+    networks:
+      - name: "{{ docker_network_name}}"        
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy"]
       interval: 30s

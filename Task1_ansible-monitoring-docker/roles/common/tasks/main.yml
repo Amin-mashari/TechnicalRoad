@@ -1,0 +1,9 @@
+---
+# check docker installed
+- name: Include group variables
+  include_vars: "{{ playbook_dir }}/group_vars/main.yml"
+
+# create a docker network
+- name: Create a network
+  docker_network:
+    name: "{{ docker_network_name }}"

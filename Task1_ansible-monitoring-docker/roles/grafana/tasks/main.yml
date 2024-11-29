@@ -49,6 +49,8 @@
     user: "1002:1002"  
     restart: yes  
     state: started    
+    networks:
+      - name: "{{ docker_network_name }}"    
     healthcheck:
         test: ["CMD", "curl", "--fail", "http://localhost:3000/healthz"]
         interval: 1m30s
