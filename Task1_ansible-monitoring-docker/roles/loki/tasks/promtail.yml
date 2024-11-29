@@ -1,0 +1,29 @@
+---
+- name: Create etc/promtail
+  ansible.builtin.file:
+    path: /etc/promtail
+    state: directory
+    owner: '1004'
+    group: '1004'
+    mode: 0755
+
+- name: Copy promtail config
+  ansible.builtin.copy:
+    src: files/promtail-config.yml
+    dest: /etc/promtail/promtail-config.yaml
+    owner: '1004'
+    group: '1004'
+    mode: '0644'    
+
+- name: Create a promtail container
+  docker_container:
+    name: promtail
+    image: grafana/promtail
+    restart: yes
+    state: started  
+    user: "1004:1004"       
+    volumes:
+      - /etc/promtail/promtail-config.yaml:/etc/promtail/promtail-config.yaml
+      - /var/log/positions.yaml:/var/log/positions.yaml 
+    networks:
+      - name: "{{ docker_network_name}}"

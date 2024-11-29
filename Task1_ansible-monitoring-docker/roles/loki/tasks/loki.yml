@@ -1,0 +1,47 @@
+---
+- name: Create etc/loki
+  ansible.builtin.file:
+    path: /etc/loki
+    state: directory
+    owner: '1005'
+    group: '1005'
+    mode: 0755
+
+- name: Create var/lib/loki
+  ansible.builtin.file:
+    path: /var/lib/loki
+    state: directory
+    owner: '1005'
+    group: '1005'
+    mode: 0755
+
+- name: Copy loki config
+  ansible.builtin.copy:
+    src: files/loki-config.yml
+    dest: /etc/loki/loki-config.yaml
+    owner: '1005'
+    group: '1005'
+    mode: '0644'   
+
+
+- name: Create a loki container
+  docker_container:
+    name: loki
+    image: grafana/loki
+    volumes:
+      - /etc/loki/loki-config.yaml:/etc/loki/loki-config.yaml  
+      - /var/lib/loki:/data
+    user: "1005:1005"  
+    restart: yes  
+    state: started   
+    networks:
+      - name: "{{ docker_network_name}}"   
+    command:
+      - '-config.file=/etc/loki/loki-config.yaml'
+      - '-config.expand-env=true'
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9200/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s 
