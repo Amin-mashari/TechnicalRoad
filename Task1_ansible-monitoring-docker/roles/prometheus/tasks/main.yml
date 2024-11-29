@@ -1,0 +1,54 @@
+---
+- name: Create etc/prometheus
+  ansible.builtin.file:
+    path: /etc/prometheus
+    state: directory
+    owner: '1003'
+    group: '1003'
+    mode: 0755
+
+- name: Create var/lib/prometheus
+  ansible.builtin.file:
+    path: /var/lib/prometheus
+    state: directory
+    owner: '1003'
+    group: '1003'
+    mode: 0755
+
+- name: Copy prometheus config
+  ansible.builtin.copy:
+    src: files/prometheus.yml
+    dest: /etc/prometheus/prometheus.yml
+    owner: '1003'
+    group: '1003'
+    mode: '0644'
+# add password for node-exporter
+- name: Create a node exporter container
+  docker_container:
+    name: node-exporter
+    image: quay.io/prometheus/node-exporter 
+    restart: no  
+    state: started   
+
+- name: Create a prometheus container
+  docker_container:
+    name: prometheus
+    image: prom/prometheus
+    volumes:
+      - /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /var/lib/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=60d'      
+    user: "1003:1003"  
+    restart: yes  
+    state: started   
+    ports:
+      - 9090:9090 
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s 
