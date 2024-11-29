@@ -1,0 +1,57 @@
+---
+- name: Create etc/grafana
+  ansible.builtin.file:
+    path: /etc/grafana
+    state: directory
+    owner: '1002'
+    group: '1002'
+    mode: 0755
+
+- name: Create var/lib/grafana
+  ansible.builtin.file:
+    path: /var/lib/grafana
+    state: directory
+    owner: '1002'
+    group: '1002'
+    mode: 0755
+
+
+- name: Copy grafana.ini 
+  ansible.builtin.copy:
+    src: files/grafana.ini
+    dest: /etc/grafana/grafana.ini
+    owner: '1002'
+    group: '1002'
+    mode: '0644'
+
+- name: Copy provisioning
+  ansible.builtin.copy:
+    src: files/provisioning
+    dest: /etc/grafana/
+    owner: '1002'
+    group: '1002'
+    mode: '0644'
+
+- name: Create a grafana container
+  docker_container:
+    name: grafana
+    image: grafana/grafana
+    volumes:
+      - /etc/grafana/grafana.ini:/etc/grafana/grafana.ini
+      - /etc/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - /etc/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards    
+      - /var/lib/grafana:/var/lib/grafana
+    ports:
+      - 3000:3000
+    env:
+      GF_SECURITY_ADMIN_USER: "user"
+      GF_SECURITY_ADMIN_PASSWORD: "user!123" 
+    user: "1002:1002"  
+    restart: yes  
+    state: started    
+    healthcheck:
+        test: ["CMD", "curl", "--fail", "http://localhost:3000/healthz"]
+        interval: 1m30s
+        timeout: 10s
+        retries: 3
+        start_period: 30s    
