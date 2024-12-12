@@ -27,14 +27,10 @@ This playbook is designed to:
 ## Usage
 
 1. Define your inventory file (e.g., `inventory.yml`) to specify the `observ` group with target hosts:
-   ```yaml
-   all:
-     hosts:
-       host1.example.com:
-         ansible_user: user
-       host2.example.com:
-         ansible_user: user
-   ```
+     ```ini
+      [observ]
+      server ansible_host=1.1.1.1 ansible_user=ansible
+     ```
 
 2. Run the playbook with appropriate tags:
    - To apply all roles:
